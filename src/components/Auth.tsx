@@ -1,7 +1,7 @@
-"use client"; // Ensures interactivity in Next.js
-
+"use client";
 import { useState } from "react";
-import { useRouter } from "next/navigation"; // ✅ Import useRouter
+import { useRouter } from "next/navigation";
+import { signIn } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { motion } from "framer-motion";
@@ -12,15 +12,30 @@ import { Label } from "@/components/ui/label";
 import { toast } from "react-hot-toast";
 
 export default function Auth() {
-  const router = useRouter(); // ✅ Initialize router
+  const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [loadingOAuth, setLoadingOAuth] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  const handleOAuth = (provider: string) => {
-    window.location.href = `/api/auth/${provider}`;
+  // Handle OAuth Sign-In
+  const handleOAuth = async (provider: string) => {
+    setLoadingOAuth(true);
+    try {
+      const res = await signIn(provider, { redirect: false, callbackUrl: "/dashboard" });
+
+      if (res?.error) {
+        throw new Error(res.error);
+      }
+
+      // ✅ Ensure redirect after successful login
+      router.push("/dashboard");
+    } finally {
+      setLoadingOAuth(false);
+    }
   };
 
+  // Handle Email & Password Login
   const handleLogin = async () => {
     if (!email || !password) {
       toast.error("Please enter email and password");
@@ -29,18 +44,19 @@ export default function Auth() {
 
     setLoading(true);
     try {
-      const res = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
+      const res = await signIn("credentials", {
+        redirect: false,
+        email,
+        password,
       });
 
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Something went wrong");
+      if (res?.error) {
+        throw new Error(res.error);
+      }
 
-      toast.success(data.message);
-
-      // ✅ Redirect to Dashboard after successful login
+      toast.success("Logged in successfully!");
+      
+      // ✅ Ensure redirect after successful login
       router.push("/dashboard");
     } catch (error) {
       toast.error((error as Error).message);
@@ -68,17 +84,23 @@ export default function Auth() {
           <Button
             className="flex items-center justify-center gap-3 bg-white text-black hover:bg-gray-100 border border-gray-300 transition-all"
             onClick={() => handleOAuth("google")}
+            disabled={loadingOAuth}
           >
             <FcGoogle size={22} />
-            <span className="font-medium">Continue with Google</span>
+            <span className="font-medium">
+              {loadingOAuth ? "Signing in..." : "Continue with Google"}
+            </span>
           </Button>
 
           <Button
             className="flex items-center justify-center gap-3 bg-gray-700 hover:bg-gray-600 transition-all"
             onClick={() => handleOAuth("github")}
+            disabled={loadingOAuth}
           >
             <FaGithub size={22} />
-            <span className="font-medium">Continue with GitHub</span>
+            <span className="font-medium">
+              {loadingOAuth ? "Signing in..." : "Continue with GitHub"}
+            </span>
           </Button>
 
           {/* Divider */}

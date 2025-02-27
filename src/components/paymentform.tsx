@@ -1,8 +1,23 @@
 "use client";
 
-
 import Script from "next/script";
 import { useState } from "react";
+
+interface RazorpayResponse {
+  razorpay_order_id: string;
+  razorpay_payment_id: string;
+  razorpay_signature: string;
+}
+
+interface Razorpay {
+  open: () => void;
+}
+
+declare global {
+  interface Window {
+    Razorpay: new (options: object) => Razorpay;
+  }
+}
 
 export default function PaymentForm() {
   const [amount, setAmount] = useState<number>(0);
@@ -18,8 +33,7 @@ export default function PaymentForm() {
       key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
       order_id: data.id,
 
-      handler: async function (response: any) {
-        // verify payment
+      handler: async function (response: RazorpayResponse) {
         const res = await fetch("/api/verifyOrder", {
           method: "POST",
           body: JSON.stringify({
@@ -31,7 +45,6 @@ export default function PaymentForm() {
         const data = await res.json();
         console.log(data);
         if (data.isOk) {
-          // do whatever page transition you want here as payment was successful
           alert("Payment successful");
         } else {
           alert("Payment failed");
@@ -39,8 +52,12 @@ export default function PaymentForm() {
       },
     };
 
-    const payment = new (window as any).Razorpay(paymentData);
-    payment.open();
+    if (window.Razorpay) {
+      const payment = new window.Razorpay(paymentData);
+      payment.open();
+    } else {
+      console.error("Razorpay SDK not loaded.");
+    }
   };
 
   return (
