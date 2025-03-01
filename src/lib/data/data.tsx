@@ -8,7 +8,7 @@ export const links = [
     { name: "Pricing", hash: "#Pricing" },
     { name: "FAQ", hash: "#FAQ" },
     { name: "Help", hash: "#Help" },
-    { name: "Signup", hash: "./user/Signup" },
+    { name: "About us", hash: "#Aboutus" },
 ] as const;
 
 export const tabledata = [

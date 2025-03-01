@@ -14,7 +14,7 @@ import Image from 'next/image';
 export default function Intro() {
     const { ref } = useSectionInView("overview", 0.5);
     return (
-        <section ref={ref} id='overview' className='mb-28 max-w-4xl text-center sm:mb-0 scroll-mt-20'>
+        <section ref={ref} id='overview' className=' mb-28 max-w-4xl text-center sm:mb-0 scroll-mt-20 mx-auto container w-full overflow-hidden'>
             <motion.div
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
@@ -29,7 +29,7 @@ export default function Intro() {
                 </p>
                 
                 <motion.div
-                    className='mt-8 flex flex-col sm:flex-row items-center justify-center gap-4'
+                    className='mt-8 flex flex-col mx-auto sm:flex-row items-center justify-center gap-4'
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.2 }}
@@ -54,7 +54,7 @@ export default function Intro() {
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
                     <div>
                         <motion.h2
-                            className="text-4xl sm:text-5xl font-bold text-gray-900 dark:text-white leading-tight"
+                            className="text-4xl sm:text-5xl font-bold text-gray-900 mx-auto dark:text-white leading-tight"
                             initial={{ opacity: 0, y: -10 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.5 }}

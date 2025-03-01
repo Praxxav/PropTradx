@@ -5,6 +5,7 @@ import{ EvaluationChallenge } from "@/components/evaluation_challenge";
 import PaymentOptions from "@/components/payment";
 import Pricing from "@/components/pricing";
 import { FAQSection } from "@/components/faq";
+import AboutUs from "@/components/About";
 import Footer from "@/components/Footer";
 
 export default function Home() {
@@ -18,6 +19,7 @@ export default function Home() {
       <PaymentOptions />
       <Pricing />
       <FAQSection />
+      <AboutUs />
       <Footer />
       
     </main>
