@@ -78,7 +78,7 @@ export const faqs = [
     },
     {
       question: "Is there a refund policy?",
-      answer: "Yes, we have a refund policy under specific conditions. Please check our terms and conditions for details."
+      answer: "Yes, we have the refund policy under specific conditions. Please check our terms and conditions for details."
     }
   ];
   
