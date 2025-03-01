@@ -61,7 +61,7 @@ export const NEXT_AUTH_CONFIG: NextAuthOptions = {
           return user;
         }
 
-        // If the user signed up via OAuth and password is null, update their password
+        // If the user exists but was created via OAuth (password is null)
         if (!user.password) {
           const hashedPassword = await bcrypt.hash(credentials.password, 10);
           user = await prisma.user.update({
@@ -70,7 +70,12 @@ export const NEXT_AUTH_CONFIG: NextAuthOptions = {
           });
         }
 
-        // Verify the provided password matches the stored hashed password
+        // Check if password is null before comparing
+        if (!user.password) {
+          throw new Error("This account does not have a password set. Please log in using Google/GitHub.");
+        }
+
+        // Verify password
         const isValid = await bcrypt.compare(credentials.password, user.password);
         if (!isValid) {
           throw new Error("Invalid password");
