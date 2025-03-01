@@ -24,7 +24,6 @@ declare module "next-auth" {
 }
 
 export const NEXT_AUTH_CONFIG: NextAuthOptions = {
-  // Use the Prisma adapter to persist user data in the database
   adapter: PrismaAdapter(prisma),
   providers: [
     GitHubProvider({
@@ -46,18 +45,29 @@ export const NEXT_AUTH_CONFIG: NextAuthOptions = {
           throw new Error("Missing email or password");
         }
 
-        // Find the user in the database by email
-        const user = await prisma.user.findUnique({
+        let user = await prisma.user.findUnique({
           where: { email: credentials.email },
         });
 
         if (!user) {
-          throw new Error("User not found. Please sign up first.");
+          // Sign up new users if they don't exist
+          const hashedPassword = await bcrypt.hash(credentials.password, 10);
+          user = await prisma.user.create({
+            data: {
+              email: credentials.email,
+              password: hashedPassword,
+            },
+          });
+          return user;
         }
 
-        // Prevent OAuth users from signing in with credentials
+        // If the user signed up via OAuth and password is null, update their password
         if (!user.password) {
-          throw new Error("This account was created using Google/GitHub. Please log in with that provider.");
+          const hashedPassword = await bcrypt.hash(credentials.password, 10);
+          user = await prisma.user.update({
+            where: { email: credentials.email },
+            data: { password: hashedPassword },
+          });
         }
 
         // Verify the provided password matches the stored hashed password
@@ -66,7 +76,6 @@ export const NEXT_AUTH_CONFIG: NextAuthOptions = {
           throw new Error("Invalid password");
         }
 
-        // Return the user object so that NextAuth can persist the session
         return {
           id: user.id,
           name: user.name,
