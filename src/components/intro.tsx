@@ -4,7 +4,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { BsArrowRight } from 'react-icons/bs';
-import { HiOutlineLightningBolt } from 'react-icons/hi';
+import { HiOutlineLightningBolt, HiOutlineUser } from 'react-icons/hi';
 import { useSectionInView } from '@/lib/hooks/newhoook';
 import { HiOutlineChartBar, HiOutlineBookOpen } from 'react-icons/hi';
 import Image from 'next/image';
@@ -14,7 +14,8 @@ import Image from 'next/image';
 export default function Intro() {
     const { ref } = useSectionInView("overview", 0.5);
     return (
-        <section ref={ref} id='overview' className=' mb-28 max-w-4xl text-center sm:mb-0 scroll-mt-20 mx-auto container w-full overflow-hidden'>
+        <section ref={ref} id='overview' className='sticky left-0 right-0 w-full py-20 px-6 bg-gray-50 dark:bg-gray-900 text-center'>
+
             <motion.div
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
@@ -42,11 +43,17 @@ export default function Intro() {
                     </Link>
 
                     <Link
-                        href='/learn-more'
+                        href='/dashboard'
                         className='group bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-300 px-7 py-3 flex items-center gap-2 rounded-full outline-none focus:scale-110 hover:scale-110 active:scale-105 transition cursor-pointer border border-gray-300 dark:border-gray-700 shadow-md'
                     >
-                        Learn More <HiOutlineLightningBolt className='text-yellow-500 group-hover:scale-125 transition' />
+                       Explore Dashboard <HiOutlineLightningBolt className='text-yellow-500 group-hover:scale-125 transition' />
                     </Link>
+                     <Link
+                          href='/user/signup'
+                         className='group bg-blue-600 text-white px-7 py-3 flex items-center gap-2 rounded-full outline-none focus:scale-110 shadow-md hover:scale-110 hover:bg-blue-700 active:scale-105 transition'>
+                         <HiOutlineUser className='text-white text-xl group-hover:scale-125 transition' />
+                         Login
+                     </Link>
                 </motion.div>
             </motion.div>
              {/* Trading Overview Section */}

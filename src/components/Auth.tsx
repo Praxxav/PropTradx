@@ -69,12 +69,12 @@ export default function Auth() {
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="flex justify-center items-center min-h-screen fixed inset-0"
+      className="flex justify-center items-center min-h-screen fixed inset-0 pt-16"
     >
       <Card className="w-full max-w-md p-8 text-white shadow-2xl rounded-3xl">
         <CardHeader>
           <CardTitle className="text-center text-2xl font-bold mb-2">
-            🔑 Login to <span className="text-blue-400">PropTradX</span>
+            🔑 Signin Or Signup <span className="text-blue-400">PropTradX</span>
           </CardTitle>
           <p className="text-gray-400 text-center">Trade smarter with AI insights.</p>
         </CardHeader>

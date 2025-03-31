@@ -1,14 +1,14 @@
 import GitHubProvider from "next-auth/providers/github";
 import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
-import type { NextAuthOptions, Session } from "next-auth";
-import type { JWT } from "next-auth/jwt";
+import type { NextAuthOptions } from "next-auth";
+
 import type { User } from "next-auth";
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
-import { prisma } from "@/lib/authdb/prisma"; // Your Prisma client instance
+import { prisma } from "@/lib/authdb/prisma";
 import bcrypt from "bcryptjs";
 
-// Extend the session user type to include an ID
+// Extend NextAuth types
 declare module "next-auth" {
   interface User {
     id: string;
@@ -23,8 +23,15 @@ declare module "next-auth" {
   }
 }
 
+declare module "next-auth/jwt" {
+  interface JWT {
+    id?: string;
+  }
+}
+
 export const NEXT_AUTH_CONFIG: NextAuthOptions = {
   adapter: PrismaAdapter(prisma),
+
   providers: [
     GitHubProvider({
       clientId: process.env.GITHUB_ID ?? "",
@@ -49,8 +56,8 @@ export const NEXT_AUTH_CONFIG: NextAuthOptions = {
           where: { email: credentials.email },
         });
 
+        // If user doesn't exist, create user
         if (!user) {
-          // Sign up new users if they don't exist
           const hashedPassword = await bcrypt.hash(credentials.password, 10);
           user = await prisma.user.create({
             data: {
@@ -61,7 +68,7 @@ export const NEXT_AUTH_CONFIG: NextAuthOptions = {
           return user;
         }
 
-        // If the user exists but was created via OAuth (password is null)
+        // If user exists but password not set, update password
         if (!user.password) {
           const hashedPassword = await bcrypt.hash(credentials.password, 10);
           user = await prisma.user.update({
@@ -70,13 +77,8 @@ export const NEXT_AUTH_CONFIG: NextAuthOptions = {
           });
         }
 
-        // Check if password is null before comparing
-        if (!user.password) {
-          throw new Error("This account does not have a password set. Please log in using Google/GitHub.");
-        }
-
-        // Verify password
-        const isValid = await bcrypt.compare(credentials.password, user.password);
+        // Validate password
+        const isValid = await bcrypt.compare(credentials.password, user.password!);
         if (!isValid) {
           throw new Error("Invalid password");
         }
@@ -89,24 +91,38 @@ export const NEXT_AUTH_CONFIG: NextAuthOptions = {
       },
     }),
   ],
+
   secret: process.env.NEXTAUTH_SECRET,
+
+  session: {
+    strategy: "database", 
+  },
+
   callbacks: {
-    jwt: async ({ user, token }: { user?: User; token: JWT }) => {
+    async signIn() {
+      // No manual linking needed, PrismaAdapter handles it
+      return true;
+    },
+    async jwt({ token, user }) {
       if (user) {
-        token.uid = user.id;
+        token.id = user.id;
       }
       return token;
     },
-    session: async ({ session, token }: { session: Session; token: JWT }) => {
+    async session({ session, token, user }) {
       if (session.user) {
-        session.user.id = token.uid as string;
+        session.user.id = user?.id || token.id || token.sub || "";
+        session.user.name = session.user.name || (token.name as string);
+        session.user.email = session.user.email || (token.email as string);
       }
       return session;
     },
   },
+
   pages: {
-    signIn: "/dashboard",
+    signIn: "/dashboard", 
   },
+
   debug: process.env.NODE_ENV === "development",
 };
 

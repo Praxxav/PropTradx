@@ -1,0 +1,26 @@
+{
+    "countries": [
+      "United States", "India", "United Kingdom", "Canada", "Germany", "France",
+      "Australia", "Japan", "Brazil", "South Africa"
+    ],
+    "accountTypes": [
+      { "type": "INSTANT" },
+      { "type": "1 STEP" },
+      { "type": "2 STEP" },
+      { "type": "PropTradX" }
+    ],
+    "platforms": [
+      { "name": "MetaTrader5", "logo": "/metatrader5.png", "extraFee": 0 },
+      { "name": "Match-Trader", "logo": "/matchtrader.png", "extraFee": 0 },
+      { "name": "cTrader", "logo": "/ctrader.png", "extraFee": 10 }
+    ],
+    "accountSizes": [
+        { "size": "$5,000", "basePrice": { "INSTANT": 50, "1 STEP": 60, "2 STEP": 30, "FundingPips": 40 } },
+        { "size": "$10,000", "basePrice": { "INSTANT": 100, "1 STEP": 120, "2 STEP": 60, "FundingPips": 80 } },
+        { "size": "$25,000", "basePrice": { "INSTANT": 250, "1 STEP": 300, "2 STEP": 150, "FundingPips": 200 } },
+        { "size": "$50,000", "basePrice": { "INSTANT": 500, "1 STEP": 600, "2 STEP": 300, "FundingPips": 400 } },
+        { "size": "$100,000", "basePrice": { "INSTANT": 1000, "1 STEP": 1200, "2 STEP": 600, "FundingPips": 800 } }
+      ]
+      
+  }
+  

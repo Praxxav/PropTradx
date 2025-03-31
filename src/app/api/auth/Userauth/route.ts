@@ -1,4 +1,4 @@
-import { NEXT_AUTH_CONFIG } from "@/lib/auth";
+import { NEXT_AUTH_CONFIG } from "@/app/api/auth/Userauth/auth";
 import { getServerSession } from "next-auth"
 import { NextResponse } from "next/server";
 

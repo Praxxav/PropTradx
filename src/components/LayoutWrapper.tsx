@@ -11,8 +11,8 @@ export default function LayoutWrapper({ children }: { children: React.ReactNode 
   return (
     <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
       <ActiveSectionContextProvider>
-        {/* ✅ Show Header only if NOT on dashboard pages */}
-        {!pathname.startsWith("/dashboard") && <Header />}
+        {/* ✅ Show Header ONLY on landing page */}
+        {pathname === "/" && <Header />}
         {children}
       </ActiveSectionContextProvider>
     </ThemeProvider>

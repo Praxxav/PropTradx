@@ -82,3 +82,21 @@ export const faqs = [
     }
   ];
   
+  import { Wallet, DollarSign, Trophy, Users, Settings } from "lucide-react";
+  import type { LucideIcon } from "lucide-react";
+  
+  export interface MenuItem {
+    name: string;
+    icon: LucideIcon;
+    key: string;
+  }
+  
+  export const menuItems: MenuItem[] = [
+    { name: "Accounts", icon: Wallet, key: "accounts" },
+    { name: "Transactions", icon: DollarSign, key: "transactions" },
+    { name: "Payout", icon: DollarSign, key: "payout" },
+    { name: "Competition", icon: Trophy, key: "competition" },
+    { name: "Refer & Earn", icon: Users, key: "refer" },
+    { name: "Settings", icon: Settings, key: "settings" },
+  ];
+  
