@@ -29,8 +29,8 @@ export function NavMain({
           <SidebarMenuItem className="flex items-center gap-2">
             <SidebarMenuButton
               tooltip="Quick Create"
-              className="min-w-8 bg-primary text-primary-foreground duration-200 ease-linear hover:bg-primary/90 hover:text-primary-foreground active:bg-primary/90 active:text-primary-foreground"
-              onClick={() => router.push("/Challenge-Form")} // 👈 Add redirect
+              className="ml-auto px-4 py-2 rounded-lg font-semibold text-white bg-gradient-to-r from-emerald-500 to-indigo-600 shadow-md hover:from-emerald-600 hover:to-indigo-700 transition-all duration-300 ease-in-out active:scale-95"
+              onClick={() => router.push("/Challenge-Form")}// 👈 Add redirect
             >
               <PlusCircleIcon />
               <span>New Challenge</span>
