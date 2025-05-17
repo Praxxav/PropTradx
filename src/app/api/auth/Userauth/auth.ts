@@ -100,7 +100,6 @@ export const NEXT_AUTH_CONFIG: NextAuthOptions = {
 
   callbacks: {
     async signIn() {
-      // No manual linking needed, PrismaAdapter handles it
       return true;
     },
     async jwt({ token, user }) {

@@ -3,17 +3,11 @@
 "use client";
 import { motion } from "framer-motion";
 import { useState, useEffect } from "react";
+import { useSession } from "next-auth/react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import Spinner from "./ui/spinner";
-
-interface UserData {
-  name: string;
-  email: string;
-  phone?: string;
-  address?: string;
-}
 
 interface FormData {
   country: string;
@@ -26,10 +20,8 @@ interface FormData {
 }
 
 export default function VerifyForm() {
+  const { data: session, status } = useSession();
   const [formData, setFormData] = useState<FormData | null>(null);
-  const [userData, setUserData] = useState<UserData | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [validationError, setValidationError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -43,28 +35,6 @@ export default function VerifyForm() {
         console.error("Invalid form data in localStorage", err); 
       }
     }
-  }, []);
-
-  useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const res = await fetch("/api/users");
-        if (!res.ok) {
-          if (res.status === 401) {
-            window.location.href = "/user/signup";
-          } else {
-            throw new Error(`Failed to fetch user: ${res.status}`);
-          }
-        }
-        const data = await res.json();
-        setUserData(data);
-      } catch (err) {
-        setError("Unable to fetch user details. Please try again.");
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchUser();
   }, []);
 
   const loadRazorpayScript = () => {
@@ -84,10 +54,10 @@ export default function VerifyForm() {
     }
 
     setValidationError(null);
-    setIsSubmitting(true); // Start submitting
+    setIsSubmitting(true);
 
-    if (!userData) {
-      alert("User data missing. Please refresh the page.");
+    if (!session?.user) {
+      alert("User session missing. Please log in again.");
       setIsSubmitting(false);
       return;
     }
@@ -113,7 +83,7 @@ export default function VerifyForm() {
         key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
         amount: formData.price * 100,
         currency: "USD",
-        name: userData.name,
+        name: session.user.name,
         description: "PropTradX Payment",
         order_id: data.id,
         handler: function (response: { [key: string]: unknown }) {
@@ -121,8 +91,8 @@ export default function VerifyForm() {
           console.log("Payment response:", response);
         },
         prefill: {
-          name: userData.name,
-          email: userData.email,
+          name: session.user.name,
+          email: session.user.email,
           contact: formData.phoneNumber,
         },
         theme: { color: "#10B981" },
@@ -133,11 +103,11 @@ export default function VerifyForm() {
     } catch (err) {
       console.error("Error:", err);
     } finally {
-      setIsSubmitting(false); // Stop submitting after completion
+      setIsSubmitting(false);
     }
   };
 
-  if (loading) {
+  if (status === "loading") {
     return (
       <div className="flex justify-center items-center h-screen">
         <Spinner size="large" color="green" />
@@ -145,10 +115,10 @@ export default function VerifyForm() {
     );
   }
 
-  if (error || !formData || !userData) {
+  if (!session?.user || !formData) {
     return (
       <div className="flex flex-col justify-center items-center h-screen text-white space-y-4">
-        <p>{error || "Something went wrong. Please refresh."}</p>
+        <p>Something went wrong. Please refresh or login again.</p>
         <Button onClick={() => window.location.reload()}>Retry</Button>
       </div>
     );
@@ -172,13 +142,13 @@ export default function VerifyForm() {
             <CardContent className="space-y-6 text-sm sm:text-base">
               <div className="space-y-2">
                 <Label className="text-gray-400">Name:</Label>
-                <p>{userData.name}</p>
+                <p>{session.user.name}</p>
                 <Label className="text-gray-400">Email:</Label>
-                <p>{userData.email}</p>
+                <p>{session.user.email}</p>
                 <Label className="text-gray-400">Phone:</Label>
-                <p>{formData.phoneNumber || userData.phone || "Not Provided"}</p>
+                <p>{formData.phoneNumber || "Not Provided"}</p>
                 <Label className="text-gray-400">Address:</Label>
-                <p>{formData.address || userData.address || "Not Provided"}</p>
+                <p>{formData.address || "Not Provided"}</p>
               </div>
 
               <div className="space-y-2">

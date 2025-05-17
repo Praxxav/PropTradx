@@ -31,9 +31,21 @@ export default function ConfigureForm({ onNext }: ConfigureFormProps) {
   });
   const [price, setPrice] = useState<number | null>(null);
 
-  const handleNext = () => {
+  const handleNext  = async () => {
     const formWithPrice = { ...form, price: price ?? 0, address: form.address ?? "" };
     localStorage.setItem("formData", JSON.stringify(formWithPrice));
+    try {
+      await fetch("/api/users", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify(formWithPrice),
+      });
+    } catch (error) {
+        console.error("Error saving form data", error);
+    }
     onNext();
   };
 

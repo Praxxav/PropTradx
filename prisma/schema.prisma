@@ -14,9 +14,13 @@ model User {
   password      String?
   image         String?
   emailVerified DateTime?
-  phone         String?        // New field
-  address       String?        // New field
-  country       String?        // New field
+  phone         String?        
+  address       String?        
+  country       String?   
+  price         Int?   
+  accountType  String?
+  platform      String?
+  accountSize  String? 
   accounts      Account[]
   sessions      Session[]
 }
