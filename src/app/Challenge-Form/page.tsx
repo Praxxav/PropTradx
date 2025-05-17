@@ -51,7 +51,7 @@ export default function Page() {
               exit={{ opacity: 0, x: 20 }}
               transition={{ duration: 0.4 }}
             >
-              <VerifyForm />
+              <VerifyForm  />
             </motion.div>
           )}
         </AnimatePresence>

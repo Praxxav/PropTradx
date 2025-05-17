@@ -15,6 +15,9 @@ export default function Auth() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [loadingOAuth, setLoadingOAuth] = useState(false);
+
+  // New name state for JWT sign-in
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
@@ -28,17 +31,16 @@ export default function Auth() {
         throw new Error(res.error);
       }
 
-      // ✅ Ensure redirect after successful login
       router.push("/dashboard");
     } finally {
       setLoadingOAuth(false);
     }
   };
 
-  // Handle Email & Password Login
+  // Handle Email & Password Login (credentials provider)
   const handleLogin = async () => {
-    if (!email || !password) {
-      toast.error("Please enter email and password");
+    if (!name || !email || !password) {
+      toast.error("Please enter name, email and password");
       return;
     }
 
@@ -46,6 +48,7 @@ export default function Auth() {
     try {
       const res = await signIn("credentials", {
         redirect: false,
+        name,      // pass name here
         email,
         password,
       });
@@ -55,8 +58,6 @@ export default function Auth() {
       }
 
       toast.success("Logged in successfully!");
-      
-      // ✅ Ensure redirect after successful login
       router.push("/dashboard");
     } catch (error) {
       toast.error((error as Error).message);
@@ -110,8 +111,18 @@ export default function Auth() {
             <div className="w-full h-px bg-gray-600"></div>
           </div>
 
-          {/* Email & Password Login */}
+          {/* Email & Password Login with Name */}
           <div className="flex flex-col space-y-3">
+            <Label className="text-gray-400">Name</Label>
+            <Input
+              type="text"
+              placeholder="Enter your name"
+              className="bg-gray-700 text-white focus:ring focus:ring-blue-500"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleLogin()}
+            />
+
             <Label className="text-gray-400">Email</Label>
             <Input
               type="email"

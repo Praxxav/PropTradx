@@ -4,12 +4,6 @@ import * as React from "react"
 import {
   ArrowUpCircleIcon,
   BarChartIcon,
-  CameraIcon,
-  //ClipboardListIcon,
- // DatabaseIcon,
-  FileCodeIcon,
-//  FileIcon,
-  FileTextIcon,
   FolderIcon,
   HelpCircleIcon,
   LayoutDashboardIcon,
@@ -19,6 +13,7 @@ import {
   UsersIcon,
 } from "lucide-react"
 
+import { useSession } from "next-auth/react"
 import { NavMain } from "@/components/nav-main"
 import { NavSecondary } from "@/components/nav-secondary"
 import { NavUser } from "@/components/nav-user"
@@ -32,107 +27,61 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
 
-const data = {
-  user: {
-    name: "PropTradx",
-    email: "kulkarnipranav901@gmail.com",
-    avatar: "/avatars/shadcn.jpg",
+const navMain = [
+  {
+    title: "Dashboard",
+    url: "#",
+    icon: LayoutDashboardIcon,
   },
-  navMain: [
-    {
-      title: "Dashboard",
-      url: "#",
-      icon: LayoutDashboardIcon,
-    },
-    {
-      title: "Accounts",
-      url: "#",
-      icon: ListIcon,
-    },
-    {
-      title: "Analytics",
-      url: "#",
-      icon: BarChartIcon,
-    },
-    {
-      title: "Competitions",
-      url: "#",
-      icon: FolderIcon,
-    },
-    {
-      title: "Payout",
-      url: "#",
-      icon: UsersIcon,
-    },
-  ],
-  navClouds: [
-    {
-      title: "Capture",
-      icon: CameraIcon,
-      isActive: true,
-      url: "#",
-      items: [
-        {
-          title: "Active Proposals",
-          url: "#",
-        },
-        {
-          title: "Archived",
-          url: "#",
-        },
-      ],
-    },
-    {
-      title: "Proposal",
-      icon: FileTextIcon,
-      url: "#",
-      items: [
-        {
-          title: "Active Proposals",
-          url: "#",
-        },
-        {
-          title: "Archived",
-          url: "#",
-        },
-      ],
-    },
-    {
-      title: "Prompts",
-      icon: FileCodeIcon,
-      url: "#",
-      items: [
-        {
-          title: "Active Proposals",
-          url: "#",
-        },
-        {
-          title: "Archived",
-          url: "#",
-        },
-      ],
-    },
-  ],
-  navSecondary: [
-    {
-      title: "Settings",
-      url: "/Settings",
-      icon: SettingsIcon,
-    },
-    {
-      title: "Get Help",
-      url: "#",
-      icon: HelpCircleIcon,
-    },
-    {
-      title: "Search",
-      url: "#",
-      icon: SearchIcon,
-    },
-  ],
-}
+  {
+    title: "Accounts",
+    url: "#",
+    icon: ListIcon,
+  },
+  {
+    title: "Analytics",
+    url: "#",
+    icon: BarChartIcon,
+  },
+  {
+    title: "Competitions",
+    url: "#",
+    icon: FolderIcon,
+  },
+  {
+    title: "Payout",
+    url: "#",
+    icon: UsersIcon,
+  },
+]
+
+const navSecondary = [
+  {
+    title: "Settings",
+    url: "/Settings",
+    icon: SettingsIcon,
+  },
+  {
+    title: "Get Help",
+    url: "#",
+    icon: HelpCircleIcon,
+  },
+  {
+    title: "Search",
+    url: "#",
+    icon: SearchIcon,
+  },
+]
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const { data: session,  } = useSession()
+
+  const user = {
+    name: session?.user?.name || "Guest",
+    email: session?.user?.email || "Not logged in",
+    avatar: session?.user?.image || "/avatars/shadcn.jpg", // Fallback image
+  }
+
   return (
     <Sidebar collapsible="offcanvas" {...props}>
       <SidebarHeader>
@@ -150,13 +99,14 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarHeader>
+
       <SidebarContent>
-        <NavMain items={data.navMain} />
-        
-        <NavSecondary items={data.navSecondary} className="mt-auto" />
+        <NavMain items={navMain} />
+        <NavSecondary items={navSecondary} className="mt-auto" />
       </SidebarContent>
+
       <SidebarFooter>
-        <NavUser user={data.user} />
+        <NavUser user={user} />
       </SidebarFooter>
     </Sidebar>
   )

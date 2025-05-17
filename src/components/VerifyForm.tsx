@@ -26,6 +26,8 @@ export default function VerifyForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
+
+
     const storedFormData = localStorage.getItem("formData");
     if (storedFormData) {
       try {

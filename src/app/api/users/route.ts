@@ -3,16 +3,15 @@ import { prisma } from "@/lib/authdb/prisma";
 import { getServerSession } from "next-auth";
 import { NEXT_AUTH_CONFIG } from "@/app/api/auth/Userauth/auth";
 
-
 export async function GET() {
   const session = await getServerSession(NEXT_AUTH_CONFIG);
 
-  if (!session?.user?.id) {
+  if (!session?.user?.email) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   const user = await prisma.user.findUnique({
-    where: { id: session.user.id },
+    where: { email: session.user.email },
     select: {
       name: true,
       email: true,
@@ -31,22 +30,23 @@ export async function GET() {
 
 export async function POST(req: Request) {
   const session = await getServerSession(NEXT_AUTH_CONFIG);
-  const body = await req.json();
 
-  if (!session?.user?.id) {
+  if (!session?.user?.email) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  const body = await req.json();
+
   const updatedUser = await prisma.user.update({
-    where: { id: session.user.id },
+    where: { email: session.user.email },
     data: {
-      phone: body.phoneNumber,
+      phone: body.phone,
       address: body.address,
       country: body.country,
       accountType: body.accountType,
       platform: body.platform,
       accountSize: body.accountSize,
-      price: parseInt(body.price),
+      price: parseInt(body.totalPrice),
     },
   });
 

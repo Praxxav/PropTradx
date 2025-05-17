@@ -8,7 +8,6 @@ import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import { prisma } from "@/lib/authdb/prisma";
 import bcrypt from "bcryptjs";
 
-// Extend NextAuth types
 declare module "next-auth" {
   interface User {
     id: string;
@@ -26,6 +25,8 @@ declare module "next-auth" {
 declare module "next-auth/jwt" {
   interface JWT {
     id?: string;
+    name?: string | null;
+    email?: string | null;
   }
 }
 
@@ -44,6 +45,7 @@ export const NEXT_AUTH_CONFIG: NextAuthOptions = {
     CredentialsProvider({
       name: "Credentials",
       credentials: {
+        name: { label: "Name", type: "text", placeholder: "Your full name" },
         email: { label: "Email", type: "text", placeholder: "your-email@example.com" },
         password: { label: "Password", type: "password", placeholder: "Your password" },
       },
@@ -51,16 +53,19 @@ export const NEXT_AUTH_CONFIG: NextAuthOptions = {
         if (!credentials?.email || !credentials?.password) {
           throw new Error("Missing email or password");
         }
+        if (!credentials.name) {
+          throw new Error("Name is required");
+        }
 
         let user = await prisma.user.findUnique({
           where: { email: credentials.email },
         });
 
-        // If user doesn't exist, create user
         if (!user) {
           const hashedPassword = await bcrypt.hash(credentials.password, 10);
           user = await prisma.user.create({
             data: {
+              name: credentials.name,
               email: credentials.email,
               password: hashedPassword,
             },
@@ -68,7 +73,6 @@ export const NEXT_AUTH_CONFIG: NextAuthOptions = {
           return user;
         }
 
-        // If user exists but password not set, update password
         if (!user.password) {
           const hashedPassword = await bcrypt.hash(credentials.password, 10);
           user = await prisma.user.update({
@@ -77,7 +81,6 @@ export const NEXT_AUTH_CONFIG: NextAuthOptions = {
           });
         }
 
-        // Validate password
         const isValid = await bcrypt.compare(credentials.password, user.password!);
         if (!isValid) {
           throw new Error("Invalid password");
@@ -95,31 +98,81 @@ export const NEXT_AUTH_CONFIG: NextAuthOptions = {
   secret: process.env.NEXTAUTH_SECRET,
 
   session: {
-    strategy: "database", 
+    strategy: "jwt",
   },
 
   callbacks: {
-    async signIn() {
+    async signIn({ user, account }) {
+      // Only run this for OAuth providers (Google, GitHub)
+      if (account?.provider && account.type === "oauth") {
+        if (!user.email) {
+          // Email is required to link accounts
+          return false;
+        }
+
+        // Check if user already exists by email
+        const existingUser = await prisma.user.findUnique({
+          where: { email: user.email },
+        });
+
+        if (existingUser) {
+          // Check if OAuth account is already linked
+          const linkedAccount = await prisma.account.findFirst({
+            where: {
+              userId: existingUser.id,
+              provider: account.provider,
+              providerAccountId: account.providerAccountId,
+            },
+          });
+
+          // If not linked, link the OAuth account to the existing user
+          if (!linkedAccount) {
+            await prisma.account.create({
+              data: {
+                userId: existingUser.id,
+                type: account.type,
+                provider: account.provider,
+                providerAccountId: account.providerAccountId,
+                refresh_token: account.refresh_token,
+                access_token: account.access_token,
+                expires_at: account.expires_at,
+                token_type: account.token_type,
+                scope: account.scope,
+                id_token: account.id_token,
+                session_state: account.session_state,
+              },
+            });
+          }
+        }
+        // Allow sign in in all cases here
+        return true;
+      }
+
+      // For CredentialsProvider or others, just allow sign in
       return true;
     },
+
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
+        token.name = user.name ?? null;
+        token.email = user.email ?? null;
       }
       return token;
     },
-    async session({ session, token, user }) {
+
+    async session({ session, token }) {
       if (session.user) {
-        session.user.id = user?.id || token.id || token.sub || "";
-        session.user.name = session.user.name || (token.name as string);
-        session.user.email = session.user.email || (token.email as string);
+        session.user.id = token.id ?? "";
+        session.user.name = token.name ?? session.user.name ?? null;
+        session.user.email = token.email ?? session.user.email ?? null;
       }
       return session;
     },
   },
 
   pages: {
-    signIn: "/dashboard", 
+    signIn: "/dashboard",
   },
 
   debug: process.env.NODE_ENV === "development",
