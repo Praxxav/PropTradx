@@ -10,6 +10,9 @@ import { Label } from "@/components/ui/label";
 import Spinner from "./ui/spinner";
 
 interface FormData {
+  firstName: string;
+  lastName: string;
+  email: string;
   country: string;
   accountType: string;
   platform: string;
@@ -127,7 +130,7 @@ export default function VerifyForm() {
   }
 
   return (
-    <div className="flex justify-center items-center min-h-screen pt-16 px-4">
+    <div className="flex justify-center items-center min-h-screen pt-16 px-4 w-full">
       <motion.div
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
@@ -143,10 +146,13 @@ export default function VerifyForm() {
 
             <CardContent className="space-y-6 text-sm sm:text-base">
               <div className="space-y-2">
-                <Label className="text-gray-400">Name:</Label>
-                <p>{session.user.name}</p>
+                <Label className="text-gray-400">firstName:</Label>
+                <p>{formData.firstName}</p>
+                <Label className="text-gray-400">lastName:</Label>
+                <p>{formData.lastName}</p>
+                  
                 <Label className="text-gray-400">Email:</Label>
-                <p>{session.user.email}</p>
+                <p>{formData.email}</p>
                 <Label className="text-gray-400">Phone:</Label>
                 <p>{formData.phoneNumber || "Not Provided"}</p>
                 <Label className="text-gray-400">Address:</Label>

@@ -1,4 +1,5 @@
 "use client";
+
 import React, { useState } from "react";
 import ConfigureForm from "@/components/ConfigureForm";
 import VerifyForm from "@/components/VerifyForm";
@@ -10,12 +11,12 @@ export default function Page() {
 
   const handleNext = () => {
     if (currentStep < 3) {
-      setCurrentStep(currentStep + 1);
+      setCurrentStep((prev) => prev + 1);
     }
   };
 
   return (
-    <div className="min-h-screen border-white bg-gradient-to-br from-gray-950 via-black to-gray-900 flex flex-col justify-start items-center py-20 px-4">
+    <div className="min-h-screen bg-gradient-to-br from-gray-950 via-black to-gray-900 flex flex-col items-center py-20 px-4">
       {/* Progress Bar */}
       <motion.div
         initial={{ opacity: 0, y: -10 }}
@@ -51,7 +52,7 @@ export default function Page() {
               exit={{ opacity: 0, x: 20 }}
               transition={{ duration: 0.4 }}
             >
-              <VerifyForm  />
+              <VerifyForm />
             </motion.div>
           )}
         </AnimatePresence>

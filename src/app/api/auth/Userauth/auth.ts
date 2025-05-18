@@ -41,6 +41,13 @@ export const NEXT_AUTH_CONFIG: NextAuthOptions = {
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID ?? "",
       clientSecret: process.env.GOOGLE_CLIENT_SECRET ?? "",
+       authorization: {
+        params: {
+          prompt: "select_account", // Force account selection every time
+          access_type: "offline",
+          response_type: "code"
+        }
+      }
     }),
     CredentialsProvider({
       name: "Credentials",
@@ -106,7 +113,6 @@ export const NEXT_AUTH_CONFIG: NextAuthOptions = {
       // Only run this for OAuth providers (Google, GitHub)
       if (account?.provider && account.type === "oauth") {
         if (!user.email) {
-          // Email is required to link accounts
           return false;
         }
 
@@ -157,6 +163,17 @@ export const NEXT_AUTH_CONFIG: NextAuthOptions = {
         token.id = user.id;
         token.name = user.name ?? null;
         token.email = user.email ?? null;
+      }
+      else if (token.email) {
+        const dbUser = await prisma.user.findUnique({
+          where: { email: token.email },
+        });
+
+        if (dbUser) {
+          token.id = dbUser.id;
+          token.name = dbUser.name;
+          token.email = dbUser.email;
+        }
       }
       return token;
     },

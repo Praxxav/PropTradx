@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { signIn } from "next-auth/react";
+import { signIn, signOut } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { motion } from "framer-motion";
@@ -22,22 +22,22 @@ export default function Auth() {
   const [password, setPassword] = useState("");
 
   // Handle OAuth Sign-In
-  const handleOAuth = async (provider: string) => {
-    setLoadingOAuth(true);
-    try {
-      const res = await signIn(provider, { redirect: false, callbackUrl: "/dashboard" });
+ const handleOAuth = async (provider: string) => {
+  setLoadingOAuth(true);
+  try {
+    // Sign out first to clear existing session
+    await signOut({ redirect: false });
+    
+    // Then initiate new sign-in
+    await signIn(provider, { 
+      redirect: true,
+      callbackUrl: "/dashboard"
+    });
+  }  finally {
+    setLoadingOAuth(false);
+  }
+};
 
-      if (res?.error) {
-        throw new Error(res.error);
-      }
-
-      router.push("/dashboard");
-    } finally {
-      setLoadingOAuth(false);
-    }
-  };
-
-  // Handle Email & Password Login (credentials provider)
   const handleLogin = async () => {
     if (!name || !email || !password) {
       toast.error("Please enter name, email and password");
@@ -48,7 +48,7 @@ export default function Auth() {
     try {
       const res = await signIn("credentials", {
         redirect: false,
-        name,      // pass name here
+        name,     
         email,
         password,
       });
