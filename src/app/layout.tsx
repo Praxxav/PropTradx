@@ -17,12 +17,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" className={`${inter.variable} ${geistMono.variable}`} suppressHydrationWarning>
       <head>
-         <Script
+         <Script>
           async
           src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5355978764450307"
           strategy="afterInteractive"
           crossOrigin="anonymous"
-        />
+        </Script>
       </head>
       <body className="bg-gray-50 text-gray-950 dark:bg-gray-900 dark:text-white min-h-screen">
        <SessionProviderWrapper>
