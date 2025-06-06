@@ -15,7 +15,8 @@ model User {
   image         String?
   emailVerified DateTime?
   phone         String?        
-  address       String?        
+  address       String?     
+  token         String?   
   country       String?   
   price         Int?   
   accountType  String?

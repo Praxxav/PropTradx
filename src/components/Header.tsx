@@ -52,7 +52,7 @@ export const Headers = () => {
                 {link.name}
                 {link.name === activeSection && (
                   <motion.span
-                    className="absolute inset-0 -z-10 bg-gray-100 dark:bg-gray-700 rounded-full text-gray-950 dark:text-white"
+                    className="absolute inset-0 -z-10 bg-gray-100 dark:bg-gray-700 rounded-full text-gray-950 dark:text-white flex-shrink-0"
                     layoutId="activeSection"
                     transition={{
                       type: "spring",

@@ -3,6 +3,9 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
 import type { NextAuthOptions } from "next-auth";
 
+import { SignJWT, importJWK } from 'jose';
+import { randomUUID } from 'crypto';
+
 import type { User } from "next-auth";
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import { prisma } from "@/lib/authdb/prisma";
@@ -11,13 +14,15 @@ import bcrypt from "bcryptjs";
 declare module "next-auth" {
   interface User {
     id: string;
+    token?: string;
   }
   interface Session {
     user: {
       id: string;
       name?: string | null;
       email?: string | null;
-      image?: string | null;
+      jwtToken?: string;
+      role?: string;
     };
   }
 }
@@ -27,8 +32,22 @@ declare module "next-auth/jwt" {
     id?: string;
     name?: string | null;
     email?: string | null;
+    jwtToken?: string;
   }
 }
+
+// Generate JWT manually
+const generateJWT = async (payload: Record<string, any>) => {
+  const secret = process.env.JWT_SECRET || 'secret';
+  const jwk = await importJWK({ k: secret, alg: 'HS256', kty: 'oct' });
+
+  return new SignJWT(payload)
+    .setProtectedHeader({ alg: 'HS256' })
+    .setIssuedAt()
+    .setExpirationTime('365d')
+    .setJti(randomUUID())
+    .sign(jwk);
+};
 
 export const NEXT_AUTH_CONFIG: NextAuthOptions = {
   adapter: PrismaAdapter(prisma),
@@ -41,13 +60,13 @@ export const NEXT_AUTH_CONFIG: NextAuthOptions = {
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID ?? "",
       clientSecret: process.env.GOOGLE_CLIENT_SECRET ?? "",
-       authorization: {
+      authorization: {
         params: {
-          prompt: "select_account", // Force account selection every time
+          prompt: "select_account",
           access_type: "offline",
-          response_type: "code"
-        }
-      }
+          response_type: "code",
+        },
+      },
     }),
     CredentialsProvider({
       name: "Credentials",
@@ -57,46 +76,40 @@ export const NEXT_AUTH_CONFIG: NextAuthOptions = {
         password: { label: "Password", type: "password", placeholder: "Your password" },
       },
       async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) {
-          throw new Error("Missing email or password");
-        }
-        if (!credentials.name) {
-          throw new Error("Name is required");
-        }
+        const { email, password, name } = credentials ?? {};
+        if (!email || !password) throw new Error("Missing email or password");
 
-        let user = await prisma.user.findUnique({
-          where: { email: credentials.email },
-        });
+        let user = await prisma.user.findUnique({ where: { email } });
 
         if (!user) {
-          const hashedPassword = await bcrypt.hash(credentials.password, 10);
+          const hashedPassword = await bcrypt.hash(password, 10);
           user = await prisma.user.create({
-            data: {
-              name: credentials.name,
-              email: credentials.email,
-              password: hashedPassword,
-            },
+            data: { name: name ?? "", email, password: hashedPassword },
           });
-          return user;
         }
 
         if (!user.password) {
-          const hashedPassword = await bcrypt.hash(credentials.password, 10);
+          const hashedPassword = await bcrypt.hash(password, 10);
           user = await prisma.user.update({
-            where: { email: credentials.email },
+            where: { email },
             data: { password: hashedPassword },
           });
         }
 
-        const isValid = await bcrypt.compare(credentials.password, user.password!);
-        if (!isValid) {
-          throw new Error("Invalid password");
-        }
+        const isValid = await bcrypt.compare(password, user.password!);
+        if (!isValid) throw new Error("Invalid password");
+
+        const jwtToken = await generateJWT({ id: user.id, email: user.email });
+        await prisma.user.update({
+          where: { id: user.id },
+          data: { token: jwtToken },
+        });
 
         return {
           id: user.id,
           name: user.name,
           email: user.email,
+          token: jwtToken,
         } as User;
       },
     }),
@@ -104,25 +117,16 @@ export const NEXT_AUTH_CONFIG: NextAuthOptions = {
 
   secret: process.env.NEXTAUTH_SECRET,
 
-  session: {
-    strategy: "jwt",
-  },
+  session: { strategy: "jwt" },
 
   callbacks: {
     async signIn({ user, account }) {
-      // Only run this for OAuth providers (Google, GitHub)
-      if (account?.provider && account.type === "oauth") {
-        if (!user.email) {
-          return false;
-        }
+      if (account?.provider === "google" || account?.provider === "github") {
+        if (!user.email) return false;
 
-        // Check if user already exists by email
-        const existingUser = await prisma.user.findUnique({
-          where: { email: user.email },
-        });
+        const existingUser = await prisma.user.findUnique({ where: { email: user.email } });
 
         if (existingUser) {
-          // Check if OAuth account is already linked
           const linkedAccount = await prisma.account.findFirst({
             where: {
               userId: existingUser.id,
@@ -131,7 +135,6 @@ export const NEXT_AUTH_CONFIG: NextAuthOptions = {
             },
           });
 
-          // If not linked, link the OAuth account to the existing user
           if (!linkedAccount) {
             await prisma.account.create({
               data: {
@@ -150,11 +153,7 @@ export const NEXT_AUTH_CONFIG: NextAuthOptions = {
             });
           }
         }
-        // Allow sign in in all cases here
-        return true;
       }
-
-      // For CredentialsProvider or others, just allow sign in
       return true;
     },
 
@@ -163,16 +162,14 @@ export const NEXT_AUTH_CONFIG: NextAuthOptions = {
         token.id = user.id;
         token.name = user.name ?? null;
         token.email = user.email ?? null;
-      }
-      else if (token.email) {
-        const dbUser = await prisma.user.findUnique({
-          where: { email: token.email },
-        });
-
+        token.jwtToken = (user as any).token ?? "";
+      } else if (token.email) {
+        const dbUser = await prisma.user.findUnique({ where: { email: token.email } });
         if (dbUser) {
           token.id = dbUser.id;
           token.name = dbUser.name;
           token.email = dbUser.email;
+          token.jwtToken = dbUser.token ?? "";
         }
       }
       return token;
@@ -183,6 +180,8 @@ export const NEXT_AUTH_CONFIG: NextAuthOptions = {
         session.user.id = token.id ?? "";
         session.user.name = token.name ?? session.user.name ?? null;
         session.user.email = token.email ?? session.user.email ?? null;
+        session.user.jwtToken = token.jwtToken ?? "";
+        session.user.role = process.env.ADMINS?.split(',').includes(token.email ?? "") ? 'admin' : 'user';
       }
       return session;
     },
