@@ -40,29 +40,32 @@ export default function PrivacyPolicy() {
 
       <h3 className="text-xl font-medium mt-4 mb-2">Definitions</h3>
       <p className="mb-2">For the purposes of this Privacy Policy:</p>
-      <ul className="list-disc list-inside space-y-2 mb-4">
-        <li><strong>Account:</strong> A unique account created for You to access our Service.</li>
-        <li><strong>Affiliate:</strong> Entity under common control with a party.</li>
-        <li><strong>Company:</strong> (referred to as "We", "Us" or "Our") refers to proptradx.</li>
-        <li><strong>Cookies:</strong> Small files placed on Your device to track browsing history.</li>
-        <li><strong>Country:</strong> Maharashtra, India</li>
-        <li><strong>Device:</strong> Any device that can access the Service.</li>
-        <li><strong>Personal Data:</strong> Information related to an identifiable individual.</li>
-        <li><strong>Service:</strong> Refers to the Website.</li>
-        <li><strong>Service Provider:</strong> Third-party who processes data on behalf of the Company.</li>
-        <li><strong>Usage Data:</strong> Data collected automatically when using the Service.</li>
-        <li><strong>Website:</strong>{" "}
-          <a
-            href="https://proptradx.netlify.app/"
-            className="text-blue-600 underline"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            https://proptradx.netlify.app/
-          </a>
-        </li>
-        <li><strong>You:</strong> The individual accessing the Service or the company they represent.</li>
-      </ul>
+   <ul className="list-disc list-inside space-y-2 mb-4">
+  <li><strong>Account:</strong> A unique account created for You to access our Service.</li>
+  <li><strong>Affiliate:</strong> Entity under common control with a party.</li>
+  <li>
+    <strong>Company:</strong> (referred to as &quot;We&quot;, &quot;Us&quot; or &quot;Our&quot;) refers to proptradx.
+  </li>
+  <li><strong>Cookies:</strong> Small files placed on Your device to track browsing history.</li>
+  <li><strong>Country:</strong> Maharashtra, India</li>
+  <li><strong>Device:</strong> Any device that can access the Service.</li>
+  <li><strong>Personal Data:</strong> Information related to an identifiable individual.</li>
+  <li><strong>Service:</strong> Refers to the Website.</li>
+  <li><strong>Service Provider:</strong> Third-party who processes data on behalf of the Company.</li>
+  <li><strong>Usage Data:</strong> Data collected automatically when using the Service.</li>
+  <li><strong>Website:</strong>{" "}
+    <a
+      href="https://proptradx.netlify.app/"
+      className="text-blue-600 underline"
+      target="_blank"
+      rel="noopener noreferrer"
+    >
+      https://proptradx.netlify.app/
+    </a>
+  </li>
+  <li><strong>You:</strong> The individual accessing the Service or the company they represent.</li>
+</ul>
+
 
       {/* SECTION: Collecting and Using Your Data */}
       <h2 className="text-2xl font-semibold mt-6 mb-2">Collecting and Using Your Personal Data</h2>

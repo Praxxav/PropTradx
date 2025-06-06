@@ -79,7 +79,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const user = {
     name: session?.user?.name || "Guest",
     email: session?.user?.email || "Not logged in",
-    avatar: session?.user?.image || "/avatars/shadcn.jpg", // Fallback image
+    avatar: "", // Fallback image
   }
 
   return (
